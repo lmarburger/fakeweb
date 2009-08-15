@@ -141,6 +141,14 @@ module FakeWeb
     end
   end
 
+  def self.passthrough_uri(method, uri)
+    Registry.instance.passthrough_uri(method, uri)
+  end
+
+  def self.passthrough_uri?(method, uri)
+    Registry.instance.passthrough_uri?(method, uri)
+  end
+
   # call-seq:
   #   FakeWeb.registered_uri?(method, uri)
   #
