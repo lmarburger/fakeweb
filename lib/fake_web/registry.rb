@@ -10,6 +10,7 @@ module FakeWeb
 
     def clean_registry
       self.uri_map = Hash.new { |hash, key| hash[key] = {} }
+      @passthroughs = {}
     end
 
     def register_uri(method, uri, options)
@@ -20,6 +21,27 @@ module FakeWeb
 
     def registered_uri?(method, uri)
       !responders_for(method, uri).empty?
+    end
+
+    def passthrough_uri(method, uri)
+      match = if uri.is_a?(Regexp)
+        uri
+      else
+        /#{URI.parse(uri.to_s)}/
+      end
+      (@passthroughs[method] ||= []) << match
+    end
+
+    def passthrough_uri?(method, uri)
+      passthrough_uri_matches?(method, uri) || \
+        passthrough_uri_matches?(:any, uri)
+    end
+
+    def passthrough_uri_matches?(method, uri)
+      parsed_uri = URI.parse(uri.to_s).to_s
+      (@passthroughs[method] ||= []).any? do |u|
+        parsed_uri =~ u
+      end
     end
 
     def response_for(method, uri, &block)
